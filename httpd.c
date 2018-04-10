@@ -15,7 +15,17 @@ int get_line(int, char *, int);
 
 int main(void)
 {
-	
+	int server_socket = -1, client_socket = -1;
+	u_short port = 0;
+	struct sockaddr_in client_name;
+	int client_name_len = sizeof(client_name);
+
+	server_socket = startup(&port);
+	printf("httpd running on port %d\n", port);
+
+	while(1) {
+		
+	}
 }
 
 int get_line(int socket, char *buf, int size)
