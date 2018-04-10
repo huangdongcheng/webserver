@@ -12,6 +12,8 @@
 
 int startup(u_short *);
 int get_line(int, char *, int);
+void error_die(const char *);
+
 
 int main(void)
 {
@@ -55,4 +57,46 @@ int get_line(int socket, char *buf, int size)
 	buf[i] = '\0';
 
 	return n;
+}
+
+int startup(u_short *port)
+{
+	int httpd = 0;
+	struct sockaddr_in address;
+
+	httpd = socket(AF_INET, SOCK_STREAM, 0);
+	if (httpd == -1) {
+		error_die("socket");
+	}
+
+	memset(&address, 0, sizeof(address));
+	address.sin_family = AF_INET;
+	address.sin_port = htons(*port);
+	address.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if (bind(httpd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+		error_die("bind");
+	}
+
+	if (*port == 0) {
+		int addresslen = sizeof(address);
+
+		if (getsockname(httpd, (struct sockaddr *)&address, &addresslen) == -1) {
+			error_die("getsockname");
+		}
+
+		*port = ntohs(address.sin_port);
+	}
+
+	if (listen(httpd, 5) < 0) 
+	{
+		error_die("listen");
+	}
+
+	return httpd;
+}
+
+void error_die(const char *message) {
+	perror(message);
+	exit(1);
 }
