@@ -198,3 +198,47 @@ void accept_request(int socketfd)
 
 	}
 }
+
+void unimplemented(int client)
+{
+ 	char buf[1024];
+
+ 	sprintf(buf, "HTTP/1.0 501 Method Not Implemented\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, SERVER_STRING);
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "Content-Type: text/html\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "<HTML><HEAD><TITLE>Method Not Implemented\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "</TITLE></HEAD>\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "<BODY><P>HTTP request method not supported.\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "</BODY></HTML>\r\n");
+ 	send(client, buf, strlen(buf), 0);
+}
+
+void not_found(int client)
+{
+ 	char buf[1024];
+
+ 	sprintf(buf, "HTTP/1.0 404 NOT FOUND\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "Content-Type: text/html\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "<HTML><TITLE>Not Found</TITLE>\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "<BODY><P>The server could not fulfill\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "your request because the resource specified\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "is unavailable or nonexistent.\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "</BODY></HTML>\r\n");
+ 	send(client, buf, strlen(buf), 0);
+}
