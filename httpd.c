@@ -110,3 +110,91 @@ void error_die(const char *message) {
 	perror(message);
 	exit(1);
 }
+
+void accept_request(int socketfd)
+{
+	char buf[1024] = "";
+	char method[1024] = "";
+	char url[1024] = "";
+	char path[512] = "";
+	int numchars = 0;
+
+	size_t i = 0, j = 0;
+
+	struct stat st;
+
+	int cgi = 0;
+	char *query_string = NULL;
+
+	numchars = get_line(socketfd, buf, sizeof(buf));
+
+	while(!isspace(buf[j]) && (i < sizeof(method) - 1)){
+		method[i] = buf[j];
+		i++;j++;
+	}
+	method[i] = '\0';
+
+	if (strcasecmp(method, "GET") && strcasecmp(method, "POST")) {
+		unimplemented(socketfd);
+		return;
+	}
+
+	if (strcasecmp(method, "POST")) {
+		cgi = 1;
+	}
+
+	i = 0;
+
+	while(isspace(buf[j]) && (j < sizeof(buf))){
+		j++;
+	}
+
+	while(!isspace(buf[j]) && (i < sizeof(url) - 1) && (j < sizeof(buf))) {
+		url[i] = buf[j];
+		i++;j++;
+	}
+	url[i] = '\0';
+
+	if (strcasecmp(method, "GET") == 0) {
+		query_string = url;
+
+		while((*query_string != '?') && (*query_string != '\0')) {
+			query_string++;
+		}
+
+		if (*query_string == '?') {
+			cgi = 1;
+			*query_string = '\0';
+			query_string++;
+		}
+	}
+
+	sprintf(path, "htdoc%s", url);
+
+	if (path[strlen(path) - 1] == '/') {
+		strcat(path, "index.html");
+	}
+
+	if (stat(path, &st) == -1) {
+		while ((numchars > 0) && strcmp("\n", buf)) {
+			numchars = get_line(socketfd, buf, sizeof(buf));
+		}
+
+		not_found(socketfd);
+		return;
+	}
+
+	if ((st.st_mode & S_IFMT) == S_IFDIR) {
+		strcat(path, "/index.html");
+	}
+
+	if ((st.st_mode & S_IXUSR) || (st.st_mode & S_IXGRP) || (st.st_mode & S_IXOTH)) {
+		cgi = 1;
+	}
+
+	if (!cgi) {
+		server_file(client, path);
+	} else {
+
+	}
+}
