@@ -26,8 +26,18 @@ int main(void)
 	printf("httpd running on port %d\n", port);
 
 	while(1) {
-		
+		client_socket = accept(server_soket, (struct sockaddr *)&client_name, &client_name_len);
+
+		if (client_socket == -1) {
+			error_die("accept");
+		}
+
+		accept_request(client_socket);
 	}
+	
+	close(server_socket);
+
+	return 0 ;
 }
 
 int get_line(int socket, char *buf, int size)
