@@ -242,3 +242,65 @@ void not_found(int client)
  	sprintf(buf, "</BODY></HTML>\r\n");
  	send(client, buf, strlen(buf), 0);
 }
+
+void server_file(int socketfd, const char *filename)
+{
+	FILE *resource = NULL;
+	int numchars = 1;
+	
+	resource = fopen(filename, "r");
+	if (resource == NULL) {
+		not_found(socketfd);
+		return;
+	}
+
+	headers(socketfd, resource);
+
+	cat(socketfd, resource);
+
+	fclose(resource);
+}
+
+void not_found(int client)
+{
+ 	char buf[1024];
+
+ 	sprintf(buf, "HTTP/1.0 404 NOT FOUND\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "Content-Type: text/html\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "<HTML><TITLE>Not Found</TITLE>\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "<BODY><P>The server could not fulfill\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "your request because the resource specified\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "is unavailable or nonexistent.\r\n");
+ 	send(client, buf, strlen(buf), 0);
+ 	sprintf(buf, "</BODY></HTML>\r\n");
+ 	send(client, buf, strlen(buf), 0);
+}
+
+void headers(int socketfd, const char *filename)
+{
+	char buf[1024] = "";
+
+	strcpy(buf, "HTTP/1.0 200 OK\r\n");
+	send(socketfd, buf, strlen(buf), 0);
+	strcpy(buf, "Content-type: text/html\r\n");
+	send(socketfd, buf, strlen(buf), 0);
+	strcpy(buf, "\r\n");
+	send(socketfd, buf, strlen(buf), 0);
+}
+
+void cat(int socketfd, FILE *resource)
+{
+	char buf[1024] = "";
+	fgets(buf, sizeof(buf), resource);
+	while (!feof(resource)) {
+		send(socketfd, buf, strlen(buf), 0);
+		fgets(buf, sizeof(buf), resource);
+	}
+}
